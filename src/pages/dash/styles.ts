@@ -22,8 +22,13 @@ export const container = styled.div`
   display: flex;
   flex-direction: column;
   height: 110vh;
+  width: 100vw;
   background-color: #1e2129;
   padding: 3rem;
+
+  @media (max-width: 780px) {
+    padding: 1rem;
+  }
 
   color: #fff;
 `
@@ -33,6 +38,10 @@ export const content = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   /* grid-template-rows: 80vh; */
   grid-gap: 1rem 3rem;
+
+  @media (max-width: 750px) {
+    display: none;
+  }
 `
 
 export const box = styled.div<PropsBorder>`
@@ -59,4 +68,19 @@ export const boxScroll = styled.div`
 
   overflow-y: scroll;
   height: 40vw;
+
+  @media (max-width: 780px) {
+    height: 90vh;
+  }
+`
+
+export const mobile = styled.div`
+  display: none;
+  flex-direction: column;
+
+  @media (max-width: 750px) {
+    display: flex;
+
+    width: 100vw;
+  }
 `

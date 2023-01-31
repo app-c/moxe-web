@@ -88,7 +88,7 @@ export function Relatorio() {
 
   return (
     <S.container>
-      <div className="flex flex-row my-4 items-center">
+      <div className="flex flex-col md:flex-row  my-4 items-center">
         <div>
           <p>pesquisar por matrícula</p>
           <input
@@ -102,7 +102,7 @@ export function Relatorio() {
           <CSVLink data={fileCsv}>Download me</CSVLink>
         </div>
 
-        <div className="ml-96">
+        <div className="ml-10">
           <h1 className="text-orange-400 font-bold">Total de itens</h1>
           <p>{rs.length}</p>
         </div>

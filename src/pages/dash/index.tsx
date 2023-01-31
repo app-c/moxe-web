@@ -14,6 +14,12 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { IReqEpi } from '../../dto'
 import { format } from 'date-fns'
 import { Cart } from '../../components/cart'
+import { Select } from '../../components/select'
+import React from 'react'
+
+interface PropsSelect {
+  type: 'pendente' | 'separado' | 'entregue'
+}
 
 export function Dash() {
   const { city } = useParams()
@@ -21,6 +27,8 @@ export function Dash() {
   const [dataPendent, setDataPendent] = useState<IReqEpi[]>([])
   const [dataSeparado, setDataSeparado] = useState<IReqEpi[]>([])
   const [dataEntregue, setDataEntregue] = useState<IReqEpi[]>([])
+
+  const [select, setSelect] = React.useState<PropsSelect>({ type: 'pendente' })
 
   const [search, setSearch] = useState('')
 
@@ -42,31 +50,11 @@ export function Dash() {
     })
   }, [])
 
-  const handleSendSeparado = useCallback(
-    async (item: IReqEpi) => {
-      const colection = collection(fire, 'separado')
-      const ref = doc(colection, item.id)
+  const handleSendSeparado = useCallback(async (item: IReqEpi) => {
+    const colection = collection(fire, 'separado')
+    const ref = doc(collection(fire, 'pendente'), item.id)
 
-      sendPush(item.pushNotification)
-
-      const rs = {
-        ...item,
-        data: format(new Date(), 'dd/MM/yy - HH:mm'),
-      }
-
-      try {
-        // deleteDoc(ref)
-        addDoc(colection, rs)
-      } catch (err) {
-        console.log(err)
-      }
-    },
-    [sendPush],
-  )
-
-  const handleSendEntregue = useCallback(async (item: IReqEpi) => {
-    const colection = collection(fire, 'entregue')
-    const ref = doc(colection, item.id)
+    // sendPush(item.pushNotification)
 
     const rs = {
       ...item,
@@ -74,8 +62,25 @@ export function Dash() {
     }
 
     try {
-      deleteDoc(ref)
-      addDoc(colection, rs)
+      await addDoc(colection, rs)
+      await deleteDoc(ref)
+    } catch (err) {
+      console.log(err)
+    }
+  }, [])
+
+  const handleSendEntregue = useCallback(async (item: IReqEpi) => {
+    const colection = collection(fire, 'entregue')
+    const ref = doc(collection(fire, 'separado'), item.id)
+
+    const rs = {
+      ...item,
+      data: format(new Date(), 'dd/MM/yy - HH:mm'),
+    }
+
+    try {
+      await addDoc(colection, rs)
+      await deleteDoc(ref)
     } catch (err) {
       console.log(err)
     }
@@ -218,12 +223,12 @@ export function Dash() {
   return (
     <>
       <S.container>
-        <div className="flex flex-row items-center justify-between mb-4 ">
+        <div className="flex flex-row items-center justify-between mb-2 ">
           <div>
-            <p>Buscar item pela matrícula</p>
+            <p className="text-sm text-start">Buscar item pela matrícula</p>
 
             <input
-              className="w-80 mt- mb-10 p-1 rounded-sm text-gray-900 "
+              className="w-32 mt-1 mb-10 md:w-72 p-1 rounded-sm text-gray-900  sm:w-80 "
               type="text"
               onChange={(h) => setSearch(h.currentTarget.value)}
             />
@@ -231,7 +236,7 @@ export function Dash() {
 
           <button
             onClick={handleNavitate}
-            className="bg-orange-500 py-3 px-8 rounded-md"
+            className="bg-orange-500 py-2 px-8 rounded-md"
           >
             Relatório
           </button>
@@ -273,6 +278,50 @@ export function Dash() {
             </S.boxScroll>
           </div>
         </S.content>
+
+        <S.mobile>
+          <div className="w-9/12 flex justify-between">
+            <Select
+              text="pendente"
+              pres={() => setSelect({ type: 'pendente' })}
+              selected={select.type === 'pendente'}
+            />
+
+            <Select
+              text="separado"
+              pres={() => setSelect({ type: 'separado' })}
+              selected={select.type === 'separado'}
+            />
+
+            <Select
+              text="entregue"
+              pres={() => setSelect({ type: 'entregue' })}
+              selected={select.type === 'entregue'}
+            />
+          </div>
+
+          {select.type === 'pendente' && (
+            <S.boxScroll>
+              {list.recevid.map((h) => (
+                <Cart key={h.id} pres={() => handleSendSeparado(h)} item={h} />
+              ))}
+            </S.boxScroll>
+          )}
+          {select.type === 'separado' && (
+            <S.boxScroll>
+              {list.separada.map((h) => (
+                <Cart key={h.id} pres={() => handleSendSeparado(h)} item={h} />
+              ))}
+            </S.boxScroll>
+          )}
+          {select.type === 'entregue' && (
+            <S.boxScroll>
+              {list.entregue.map((h) => (
+                <Cart key={h.id} showButton="none" item={h} />
+              ))}
+            </S.boxScroll>
+          )}
+        </S.mobile>
       </S.container>
     </>
   )
